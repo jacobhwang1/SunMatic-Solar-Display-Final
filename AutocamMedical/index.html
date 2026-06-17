@@ -173,7 +173,7 @@ header {
 
 /* ── ENV STRIP — full width bottom ── */
 .env-strip {
-  background:var(--blue);
+  background:var(--green);
   border-radius:10px;
   padding:0 18px;
   display:flex;align-items:center;
@@ -245,7 +245,7 @@ footer {
 
       <div class="video-panel">
         <video id="drone-video" autoplay loop muted playsinline>
-          <source src="https://res.cloudinary.com/dwg7m26u0/video/upload/v1780431284/AutocamMedical_l9jph6.mp4" type="video/mp4">
+          <source src="https://res.cloudinary.com/dwg7m26u0/video/upload/v1780344833/SLFireDepartment_gyopdg.mp4" type="video/mp4">
         </video>
         <div id="vid-fb" class="video-fallback" style="display:none">
           <svg viewBox="0 0 48 48" fill="none"><rect x="4" y="14" width="28" height="20" rx="3" stroke="currentColor" stroke-width="2"/><path d="M32 20l12-6v20l-12-6v-8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
@@ -258,25 +258,25 @@ footer {
       </div>
 
       <div class="stats-row">
-        <div class="stat-card s-blue">
+        <div class="stat-card s-orange">
           <div class="stat-value"><span id="s-power">--</span><span class="stat-unit">kW</span></div>
           <div class="stat-label">Live output</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card s-orange">
           <div class="stat-value"><span id="s-today">--</span><span class="stat-unit">kWh</span></div>
           <div class="stat-label">Today's energy</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card s-orange">
           <div class="stat-value"><span id="s-month">--</span><span class="stat-unit">kWh</span></div>
           <div class="stat-label">This month</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card s-orange">
           <div class="stat-value"><span id="s-lifetime">--</span><span class="stat-unit">MWh</span></div>
           <div class="stat-label">Lifetime total</div>
         </div>
-        <div class="stat-card s-green">
-          <div class="stat-value"><span id="s-co2-lifetime">--</span><span class="stat-unit">t</span></div>
-          <div class="stat-label">Total CO₂ saved</div>
+        <div class="stat-card s-orange">
+          <div class="stat-value"><span id="s-week-savings">--</span></div>
+          <div class="stat-label">Last 7 days savings</div>
         </div>
       </div>
 
@@ -323,7 +323,15 @@ footer {
       <div class="env-icon-wrap">☀️</div>
       <div>
         <div><span class="env-val" id="e-co2">--</span><span class="env-unit">kg</span></div>
-        <div class="env-label">CO₂ avoided today</div>
+        <div class="env-label">CO₂ emissions avoided today</div>
+      </div>
+    </div>
+    <div class="env-sep"></div>
+    <div class="env-item">
+      <div class="env-icon-wrap">🌍</div>
+      <div>
+        <div><span class="env-val" id="e-co2-lifetime">--</span><span class="env-unit">t</span></div>
+        <div class="env-label">Total CO₂ emissions avoided</div>
       </div>
     </div>
     <div class="env-sep"></div>
@@ -331,7 +339,7 @@ footer {
       <div class="env-icon-wrap">🌳</div>
       <div>
         <div><span class="env-val" id="e-trees">--</span><span class="env-unit">trees</span></div>
-        <div class="env-label">Equivalent planted</div>
+        <div class="env-label">Total trees planted</div>
       </div>
     </div>
     <div class="env-sep"></div>
@@ -340,22 +348,6 @@ footer {
       <div>
         <div><span class="env-val" id="e-homes">--</span><span class="env-unit">homes</span></div>
         <div class="env-label">Powered today</div>
-      </div>
-    </div>
-    <div class="env-sep"></div>
-    <div class="env-item">
-      <div class="env-icon-wrap">⚡</div>
-      <div>
-        <div><span class="env-val" id="e-lifetime">--</span><span class="env-unit">MWh</span></div>
-        <div class="env-label">Lifetime generated</div>
-      </div>
-    </div>
-    <div class="env-sep"></div>
-    <div class="env-item">
-      <div class="env-icon-wrap">💰</div>
-      <div>
-        <div><span class="env-val" id="e-savings">--</span></div>
-        <div class="env-label">Est. savings today</div>
       </div>
     </div>
   </div>
@@ -520,27 +512,40 @@ function updateStats(ov) {
   const month       = Math.round(ov.overview.lastMonthData.energy / 1000);
   const lifetimeKwh = ov.overview.lifeTimeData.energy / 1000;
   const lifetimeMwh = (lifetimeKwh / 1000).toFixed(1);
-  const co2Lifetime = (lifetimeKwh * 0.386 / 1000).toFixed(1);
+  const co2Lifetime = (lifetimeKwh * 0.386 / 1000).toFixed(1); // tonnes, lifetime
 
-  document.getElementById('s-power').textContent        = power;
-  document.getElementById('s-today').textContent        = todayKwh.toFixed(1);
-  document.getElementById('s-month').textContent        = month;
-  document.getElementById('s-lifetime').textContent     = lifetimeMwh;
-  document.getElementById('s-co2-lifetime').textContent = co2Lifetime;
+  document.getElementById('s-power').textContent    = power;
+  document.getElementById('s-today').textContent    = todayKwh.toFixed(1);
+  document.getElementById('s-month').textContent    = month;
+  document.getElementById('s-lifetime').textContent = lifetimeMwh;
 
+  // Bottom env strip — lifetime CO2 and lifetime trees (not tied to today)
+  const treesLifetime = Math.round(lifetimeKwh * 0.0165);
+  document.getElementById('e-co2-lifetime').textContent = co2Lifetime;
+  document.getElementById('e-trees').textContent        = treesLifetime;
+
+  // Today-specific bottom strip values
   const co2Today = (todayKwh * 0.386).toFixed(1);
-  const trees    = Math.round(todayKwh * 0.0165);
   const homes    = Math.round(todayKwh / 29.6);
-  const sav      = '$' + (todayKwh * RATE).toFixed(2);
 
-  document.getElementById('e-co2').textContent      = co2Today;
-  document.getElementById('e-trees').textContent    = trees;
-  document.getElementById('e-homes').textContent    = homes;
-  document.getElementById('e-lifetime').textContent = lifetimeMwh;
-  document.getElementById('e-savings').textContent  = sav;
+  document.getElementById('e-co2').textContent   = co2Today;
+  document.getElementById('e-homes').textContent = homes;
 
   document.getElementById('last-updated').textContent =
     new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+
+// NEW: calculate rolling 7-day $ savings from the actual week power data
+function updateWeekSavings(weekRaw) {
+  const pts = weekRaw.power.values;
+  // Sum all 15-min power readings, convert W readings over 15 min to kWh
+  // Each reading is in Watts (power), interval is 15 minutes = 0.25 hours
+  const totalKwh = pts.reduce((sum, p) => {
+    if (p.value == null) return sum;
+    return sum + (p.value / 1000) * 0.25; // kW * 0.25h = kWh for this interval
+  }, 0);
+  const savings = totalKwh * RATE;
+  document.getElementById('s-week-savings').textContent = '$' + savings.toFixed(2);
 }
 
 function updateWeekChart(raw) {
@@ -592,6 +597,7 @@ async function loadAll() {
     ]);
     updateStats(ovRaw);
     updateWeekChart(weekRaw);
+    updateWeekSavings(weekRaw);
     updateYearChart(yearRaw);
     document.getElementById('data-error').style.display = 'none';
   } catch (err) {
